@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pairing Code</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; background: #111; color: #fff; }
+        .code { font-size: 32px; font-weight: bold; margin-top: 20px; color: #00ff00; }
+    </style>
+</head>
+<body>
+    <h1>رمز الاقتران</h1>
+    <p>استخدم هذا الرمز للربط مع واتساب</p>
+    <div class="code" id="pairingCode">جاري التحميل...</div>
+    <script>
+        async function getCode() {
+            const res = await fetch('/pairing-code');
+            const data = await res.json();
+            document.getElementById('pairingCode').innerText = data.code;
+        }
+        setInterval(getCode, 2000);
+    </script>
+</body>
+</html>
