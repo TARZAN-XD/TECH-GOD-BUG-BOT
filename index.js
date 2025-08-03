@@ -1,34 +1,18 @@
-//base by Tech-God
-// YouTube: @techgod143
-// GitHub: @techgod143
-
 require('./settings')
 const express = require('express')
 const pino = require('pino')
-const fs = require('fs')
 const chalk = require('chalk')
-const FileType = require('file-type')
-const path = require('path')
-const axios = require('axios')
-const readline = require("readline")
-const PhoneNumber = require('awesome-phonenumber')
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const { smsg, getBuffer, downloadContentFromMessage } = require('./lib/myfunc')
-const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    DisconnectReason,
-    fetchLatestBaileysVersion,
-    PHONENUMBER_MCC,
-    jidDecode
-} = require("@whiskeysockets/baileys")
+const fs = require('fs')
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, PHONENUMBER_MCC, jidDecode } = require("@whiskeysockets/baileys")
 const NodeCache = require("node-cache")
 const Pino = require("pino")
+const readline = require("readline")
+const { smsg, getBuffer, downloadContentFromMessage } = require('./lib/myfunc')
 
-// ==== Express Setup for Render ====
+// ===== إعداد السيرفر لعرض Pairing Code =====
 const app = express()
 const PORT = process.env.PORT || 3000
-let pairCode = "Generating..." // Global variable to show code in HTML
+let pairCode = "Generating..."
 
 app.get('/', (req, res) => {
     res.send(`
@@ -36,25 +20,26 @@ app.get('/', (req, res) => {
       <head>
         <title>WhatsApp Pair Code</title>
         <style>
-          body { font-family: Arial; text-align: center; margin-top: 50px; background: #111; color: #fff; }
-          .box { padding: 20px; background: #222; display: inline-block; border-radius: 10px; }
-          h1 { color: #0f0; }
-          .code { font-size: 28px; font-weight: bold; margin-top: 15px; color: #0ff; }
+          body { background: #111; color: #fff; font-family: Arial; text-align: center; margin-top: 100px; }
+          .container { background: #222; padding: 30px; border-radius: 10px; display: inline-block; }
+          h1 { color: #00ff00; }
+          .code { font-size: 32px; font-weight: bold; margin: 20px 0; color: #00e6e6; }
         </style>
       </head>
       <body>
-        <div class="box">
-          <h1>Pairing Code</h1>
+        <div class="container">
+          <h1>WhatsApp Pairing Code</h1>
           <div class="code">${pairCode}</div>
-          <p>Refresh the page if code not visible yet.</p>
+          <p>Refresh this page if code not updated yet.</p>
         </div>
       </body>
     </html>
     `)
 })
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`))
 
-// ==== WhatsApp Bot ====
+app.listen(PORT, () => console.log(`✅ Web server running on port ${PORT}`))
+
+// ===== إعدادات البوت =====
 const store = require("@whiskeysockets/baileys").makeInMemoryStore({ logger: pino({ level: 'silent' }) })
 let phoneNumber = process.env.NUMBER || "911234567890"
 const pairingCodeFlag = !!phoneNumber || process.argv.includes("--pairing-code")
@@ -79,7 +64,7 @@ async function startBot() {
     store.bind(sock.ev)
 
     if (pairingCodeFlag && !sock.authState.creds.registered) {
-        if (useMobile) throw new Error('Cannot use pairing code with mobile api')
+        if (useMobile) throw new Error('Cannot use pairing code with mobile API')
 
         let num = phoneNumber.replace(/[^0-9]/g, '')
         if (!Object.keys(PHONENUMBER_MCC).some(v => num.startsWith(v))) {
@@ -90,7 +75,7 @@ async function startBot() {
         setTimeout(async () => {
             let code = await sock.requestPairingCode(num)
             code = code?.match(/.{1,4}/g)?.join("-") || code
-            pairCode = code // update global variable for HTML
+            pairCode = code // تحديث المتغير لعرضه في HTML
             console.log(chalk.bgGreen(`Your Pairing Code:`), chalk.white(code))
         }, 3000)
     }
@@ -100,7 +85,7 @@ async function startBot() {
             const mek = chatUpdate.messages[0]
             if (!mek.message) return
             const m = smsg(sock, mek, store)
-            require("./XeonBug5")(sock, m, chatUpdate, store) // Import external commands as is
+            require("./XeonBug5")(sock, m, chatUpdate, store) // استدعاء الأوامر كما هي
         } catch (err) {
             console.log(err)
         }
@@ -121,7 +106,7 @@ async function startBot() {
 
 startBot()
 
-// Auto reload on file change
+// Auto Reload عند التحديث
 let file = require.resolve(__filename)
 fs.watchFile(file, () => {
     fs.unwatchFile(file)
