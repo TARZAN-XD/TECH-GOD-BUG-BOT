@@ -1,25 +1,57 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pairing Code</title>
-    <style>
-        body { font-family: Arial; text-align: center; padding: 50px; background: #111; color: #fff; }
-        .code { font-size: 32px; font-weight: bold; margin-top: 20px; color: #00ff00; }
-    </style>
+<meta charset="UTF-8">
+<title>لوحة واتساب</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { background:#111; color:#fff; font-family:sans-serif; text-align:center; padding:40px; }
+    input, button { padding:14px; font-size:18px; width:90%; margin:10px auto; display:block; border-radius:8px; }
+    input { background:#222; border:1px solid #444; color:#fff; }
+    button { background:#00ff99; border:none; color:#000; font-weight:bold; cursor:pointer; }
+    button:hover { background:#00d480; }
+    .box { background:#1b1b1b; padding:30px; border-radius:12px; width:90%; max-width:450px; margin:auto; }
+</style>
 </head>
 <body>
-    <h1>رمز الاقتران</h1>
-    <p>استخدم هذا الرمز للربط مع واتساب</p>
-    <div class="code" id="pairingCode">جاري التحميل...</div>
-    <script>
-        async function getCode() {
-            const res = await fetch('/pairing-code');
-            const data = await res.json();
-            document.getElementById('pairingCode').innerText = data.code;
-        }
-        setInterval(getCode, 2000);
-    </script>
+
+<div class="box">
+    <h2>🔐 طلب رمز اقتران</h2>
+    <input id="pairNumber" placeholder="رقم واتساب (مثال: 9677XXXXXXXX)">
+    <button onclick="getPair()">طلب رمز</button>
+    <h3 id="pairResult"></h3>
+
+    <hr>
+
+    <h2>🔥 إرسال أوامر</h2>
+    <input id="target" placeholder="الرقم الهدف">
+    <button onclick="sendCmd('bug')">BUG</button>
+    <button onclick="sendCmd('crash')">CRASH</button>
+
+    <p id="cmdResult"></p>
+</div>
+
+<script>
+async function getPair() {
+    const number = document.getElementById("pairNumber").value.trim();
+    const res = await fetch("/pair", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ number })
+    });
+    document.getElementById("pairResult").innerText = (await res.json()).code || "خطأ!";
+}
+
+async function sendCmd(cmd) {
+    const number = document.getElementById("target").value.trim();
+    const res = await fetch(`/send-${cmd}`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ number })
+    });
+    document.getElementById("cmdResult").innerText = await res.text();
+}
+</script>
+
 </body>
 </html>
